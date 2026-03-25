@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart User Dashboard</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background 0.4s;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        input {
+            width: calc(50% - 12px);
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+        }
+
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .counter-box {
+            text-align: center;
+        }
+
+        #history-display {
+            word-wrap: break-word;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .alert-body {
+            background-color: #fee2e2;
+        }
+
+        pre {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container" id="main-app">
+        <h1 style="text-align: center;">Smart User Dashboard</h1>
+
+        <div class="section">
+            <h3>1. User Identity</h3>
+            <input type="text" id="nameInput" placeholder="Enter Name">
+            <input type="number" id="numInput" placeholder="Enter a Number">
+            <p id="welcomeMsg" style="font-weight: bold; color: var(--primary);">Please enter details above...</p>
+        </div>
+
+        <div class="section counter-box">
+            <h3 id="counterLabel">Count: 0</h3>
+            <button onclick="changeCount(1)">Increase (+)</button>
+            <button onclick="changeCount(-1)">Decrease (-)</button>
+            <p><strong>Step 3 (Array History):</strong> <span id="history-display">[]</span></p>
+        </div>
+
+        <div class="section">
+            <h3>2. System Profile & API Data</h3>
+            <div id="apiInfo" style="margin-bottom: 10px; font-size: 0.9rem; color: #059669;">Loading API details...
+            </div>
+            <p><strong>User Object (Step 6):</strong></p>
+            <pre id="objectDisplay"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Step 6: User Profile Object
+        let userProfile = {
+            name: "Guest",
+            history: [], // Step 3: Array storage
+            currentCount: 0
+        };
+
+        // DOM Elements
+        const nameInput = document.getElementById('nameInput');
+        const numInput = document.getElementById('numInput');
+        const welcomeMsg = document.getElementById('welcomeMsg');
+        const counterLabel = document.getElementById('counterLabel');
+        const historyDisplay = document.getElementById('history-display');
+        const objectDisplay = document.getElementById('objectDisplay');
+
+        // Step 5: Real-time Event Handling
+        nameInput.addEventListener('input', updateDashboard);
+        numInput.addEventListener('input', updateDashboard);
+
+        function updateDashboard() {
+            // Step 1: Welcome & Even/Odd logic
+            userProfile.name = nameInput.value || "Guest";
+            const num = parseInt(numInput.value);
+            let parity = isNaN(num) ? "N/A" : (num % 2 === 0 ? "Even" : "Odd");
+
+            welcomeMsg.innerText = `Welcome, ${userProfile.name}! Your number ${num || 0} is ${parity}.`;
+
+            refreshUI();
+        }
+
+        // Step 2: Dynamic Counter
+        function changeCount(val) {
+            userProfile.currentCount += val;
+            userProfile.history.push(userProfile.currentCount); // Step 3
+
+            // Step 4: DOM Manipulation - Change background if > 10
+            if (userProfile.currentCount > 10) {
+                document.body.classList.add('alert-body');
+            } else {
+                document.body.classList.remove('alert-body');
+            }
+
+            refreshUI();
+        }
+
+        function refreshUI() {
+            // Step 2 & 3: Real-time Updates
+            counterLabel.innerText = `${userProfile.name}'s Count: ${userProfile.currentCount}`;
+            historyDisplay.innerText = JSON.stringify(userProfile.history);
+
+            // Step 6: Display Object
+            objectDisplay.innerText = JSON.stringify(userProfile, null, 2);
+        }
+
+        // Step 7: API Integration
+        async function getExtraInfo() {
+            try {
+                const res = await fetch('https://jsonplaceholder.typicode.com/users/1');
+                const data = await res.json();
+                document.getElementById('apiInfo').innerText =
+                    `📌 API Verified: ${data.email} from ${data.address.city}`;
+            } catch (e) {
+                document.getElementById('apiInfo').innerText = "API data unavailable.";
+            }
+        }
+
+        // Initialize
+        getExtraInfo();
+        refreshUI();
+    </script>
+</body>
+
+</html>
